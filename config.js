@@ -9,6 +9,6 @@ module.exports = {
   // Kontrol paneli embed ayarı
   embed: {
     color: 0x2B2D31,
-    footer: "Zoktay Ses Kontrol Servisi"
+    footer: "Vyron Ses Kontrol Servisi"
   }
 };
