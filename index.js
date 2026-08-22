@@ -58,3 +58,11 @@ if (!process.env.TOKEN) {
 }
 
 client.login(process.env.TOKEN);
+
+// Render Web Service (ücretsiz) için dummy HTTP server - health check için
+const http = require('http');
+const PORT = process.env.PORT || 3000;
+http.createServer((req, res) => {
+  res.writeHead(200, { 'Content-Type': 'text/plain' });
+  res.end('Lobi bot aktif - Vyron');
+}).listen(PORT, () => console.log(`🌐 HTTP server ${PORT} portunda (Render health check)`));
