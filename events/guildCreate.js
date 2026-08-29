@@ -1,5 +1,6 @@
 const { Events } = require('discord.js');
 const { ensureLobbyForGuild } = require('../utils/ensureLobby');
+const { connectAfkVoice } = require('../utils/afkVoice');
 
 module.exports = {
   name: Events.GuildCreate,
@@ -9,6 +10,7 @@ module.exports = {
     // Biraz bekle, guild tam yüklenene kadar
     setTimeout(async () => {
       await ensureLobbyForGuild(guild, client);
+      await connectAfkVoice(guild);
     }, 2000);
   }
 };
