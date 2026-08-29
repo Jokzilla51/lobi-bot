@@ -1,6 +1,6 @@
 {
   "name": "discord-lobi-bot",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Discord Lobi - Katıl ve Oluştur ses odası botu",
   "main": "index.js",
   "type": "commonjs",
@@ -9,6 +9,7 @@
     "dev": "node --watch index.js"
   },
   "dependencies": {
+    "@discordjs/voice": "^0.19.2",
     "discord.js": "^14.16.3",
     "dotenv": "^16.4.5"
   }
