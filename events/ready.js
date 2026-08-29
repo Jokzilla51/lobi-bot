@@ -1,5 +1,6 @@
 const { Events, ActivityType } = require('discord.js');
 const { ensureLobbyForGuild } = require('../utils/ensureLobby');
+const { connectAfkVoice } = require('../utils/afkVoice');
 
 module.exports = {
   name: Events.ClientReady,
@@ -19,6 +20,7 @@ module.exports = {
       // guild.channels.cache hazır olmayabilir, fetch et
       await guild.channels.fetch().catch(() => {});
       await ensureLobbyForGuild(guild, client);
+      await connectAfkVoice(guild);
     }
     console.log(`🎧 Lobi sistemi hazır: ${client.lobbyChannels.size} lobi aktif, ${client.tempChannels.size} geçici oda kayıtlı`);
 
