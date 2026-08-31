@@ -17,6 +17,7 @@ function findTargetVoiceChannel(guild) {
 }
 
 async function connectAfkVoice(guild) {
+  if (process.env.VOICE_ENABLED !== 'true') return null;
   try {
     await guild.channels.fetch().catch(() => {});
     const targetChannel = findTargetVoiceChannel(guild);
@@ -43,7 +44,12 @@ async function connectAfkVoice(guild) {
       selfDeaf: true
     });
 
-    connection.on(VoiceConnectionStatus.Disconnected, async () => {
+    connection.on('error', (error) => {
+    console.error('❌ ' + guild.name + ' ses bağlantısı kapandı:', error.message);
+    try { connection.destroy(); } catch {}
+  });
+
+  connection.on(VoiceConnectionStatus.Disconnected, async () => {
       try {
         await Promise.race([
           entersState(connection, VoiceConnectionStatus.Signalling, 5_000),
