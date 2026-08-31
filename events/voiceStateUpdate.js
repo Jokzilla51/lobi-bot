@@ -31,7 +31,7 @@ module.exports = {
           permissionOverwrites: [
             {
               id: guild.roles.everyone.id,
-              allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.Connect, PermissionFlagsBits.Speak, PermissionFlagsBits.Stream, PermissionFlagsBits.UseVAD],
+              allow: [PermissionFlagsBits.ViewChannel, PermissionFlagsBits.Connect, PermissionFlagsBits.Speak, PermissionFlagsBits.Stream, PermissionFlagsBits.UseVAD, PermissionFlagsBits.SendMessages, PermissionFlagsBits.ReadMessageHistory, PermissionFlagsBits.EmbedLinks],
             },
             {
               id: member.id,
@@ -43,7 +43,10 @@ module.exports = {
                 PermissionFlagsBits.ManageRoles,
                 PermissionFlagsBits.ViewChannel,
                 PermissionFlagsBits.Connect,
-                PermissionFlagsBits.Speak
+                PermissionFlagsBits.Speak,
+                PermissionFlagsBits.SendMessages,
+                PermissionFlagsBits.ReadMessageHistory,
+                PermissionFlagsBits.EmbedLinks
               ],
             },
             {
@@ -53,7 +56,10 @@ module.exports = {
                 PermissionFlagsBits.Connect,
                 PermissionFlagsBits.ManageChannels,
                 PermissionFlagsBits.MoveMembers,
-                PermissionFlagsBits.ManageRoles
+                PermissionFlagsBits.ManageRoles,
+                PermissionFlagsBits.SendMessages,
+                PermissionFlagsBits.ReadMessageHistory,
+                PermissionFlagsBits.EmbedLinks
               ],
             }
           ],
