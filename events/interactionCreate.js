@@ -125,7 +125,7 @@ module.exports = {
         const channelId = interaction.customId.split(':')[1];
         const guild = interaction.guild;
         const ownerId = client.tempChannels.get(channelId);
-        if (interaction.user.id !== ownerId) {
+        if (interaction.user.id !== ownerId && !interaction.member?.permissions?.has(PermissionFlagsBits.Administrator) && !interaction.member?.permissions?.has(PermissionFlagsBits.ManageGuild)) {
           return interaction.reply({ content: '⚠️ Sadece oda sahibi limit ayarlayabilir!', ephemeral: true });
         }
         const voiceChannel = guild.channels.cache.get(channelId) || await guild.channels.fetch(channelId).catch(() => null);
@@ -151,7 +151,7 @@ module.exports = {
       if (interaction.customId.startsWith('lobi_allow_select:')) {
         const channelId = interaction.customId.split(':')[1];
         const ownerId = client.tempChannels.get(channelId);
-        if (interaction.user.id !== ownerId) {
+        if (interaction.user.id !== ownerId && !interaction.member?.permissions?.has(PermissionFlagsBits.Administrator) && !interaction.member?.permissions?.has(PermissionFlagsBits.ManageGuild)) {
           return interaction.reply({ content: '⚠️ Sadece oda sahibi izin verebilir!', ephemeral: true });
         }
         const guild = interaction.guild;
@@ -180,7 +180,7 @@ module.exports = {
       if (interaction.customId.startsWith('lobi_kick_select:')) {
         const channelId = interaction.customId.split(':')[1];
         const ownerId = client.tempChannels.get(channelId);
-        if (interaction.user.id !== ownerId) {
+        if (interaction.user.id !== ownerId && !interaction.member?.permissions?.has(PermissionFlagsBits.Administrator) && !interaction.member?.permissions?.has(PermissionFlagsBits.ManageGuild)) {
           return interaction.reply({ content: '⚠️ Sadece oda sahibi atabilir!', ephemeral: true });
         }
         const guild = interaction.guild;
