@@ -17,7 +17,7 @@ function findTargetVoiceChannel(guild) {
 }
 
 async function connectAfkVoice(guild) {
-  if (process.env.VOICE_ENABLED !== 'true') return null;
+  if (process.env.VOICE_ENABLED === 'false') return null;
   try {
     await guild.channels.fetch().catch(() => {});
     const targetChannel = findTargetVoiceChannel(guild);
