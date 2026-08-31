@@ -1,4 +1,4 @@
-const { Events, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, StringSelectMenuBuilder, UserSelectMenuBuilder } = require('discord.js');
+const { Events, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, StringSelectMenuBuilder, UserSelectMenuBuilder, PermissionFlagsBits } = require('discord.js');
 
 module.exports = {
   name: Events.InteractionCreate,
@@ -17,10 +17,10 @@ module.exports = {
       }
 
       const ownerId = client.tempChannels.get(channelId);
-      const isOwner = interaction.user.id === ownerId;
+      const isOwner = interaction.user.id === ownerId; const isAdmin = interaction.member?.permissions?.has(PermissionFlagsBits.Administrator) || interaction.member?.permissions?.has(PermissionFlagsBits.ManageGuild);
 
       // Oda sahibi kontrolü - fotoğraftaki uyarı: (⚠️ Bu paneli yalnızca oda sahibi kontrol edebilir!)
-      if (!isOwner) {
+      if (!isOwner && !isAdmin) {
         return interaction.reply({ content: '⚠️ Bu paneli yalnızca **oda sahibi** kontrol edebilir!', ephemeral: true });
       }
 
