@@ -80,7 +80,7 @@ module.exports = {
 
         // Kontrol panelini yeni odanın sohbetine gönder
         // Ses kanalları artık mesaj gönderebiliyor
-        const panel = buildControlPanel(member.id);
+        const panel = buildControlPanel(member.id, guild);
         await tempChannel.send(panel).catch(e => console.error('Panel gönderilemedi:', e));
 
         console.log(`🎧 Yeni oda oluşturuldu: ${channelName} (${tempChannel.id}) sahibi: ${displayName}`);
