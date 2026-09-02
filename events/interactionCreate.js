@@ -199,26 +199,53 @@ module.exports = {
     if (interaction.isUserSelectMenu()) {
 
       if (interaction.customId.startsWith('lobi_transfer_select:')) {
+        await interaction.deferReply({ ephemeral: true });
+
         const channelId = interaction.customId.split(':')[1];
         const guild = interaction.guild;
         const ownerId = client.tempChannels.get(channelId);
         const isAdmin = interaction.member?.permissions?.has(PermissionFlagsBits.Administrator) || interaction.member?.permissions?.has(PermissionFlagsBits.ManageGuild);
-        if (interaction.user.id !== ownerId && !isAdmin) return interaction.reply({ content: '⚠️ Sadece oda sahibi sahipliği devredebilir!', ephemeral: true });
+
+        if (interaction.user.id !== ownerId && !isAdmin) {
+          return interaction.editReply('⚠️ Sadece oda sahibi sahipliği devredebilir!');
+        }
+
         const newOwnerId = interaction.values[0];
         const newOwner = await guild.members.fetch(newOwnerId).catch(() => null);
         const voiceChannel = guild.channels.cache.get(channelId) || await guild.channels.fetch(channelId).catch(() => null);
-        if (!voiceChannel || !newOwner || newOwner.user.bot) return interaction.reply({ content: '❌ Geçerli bir üye veya oda bulunamadı.', ephemeral: true });
+
+        if (!voiceChannel || !newOwner || newOwner.user.bot) {
+          return interaction.editReply('❌ Geçerli bir üye veya oda bulunamadı.');
+        }
+
         try {
+          await voiceChannel.permissionOverwrites.edit(newOwnerId, {
+            ManageChannels: true,
+            MuteMembers: true,
+            DeafenMembers: true,
+            MoveMembers: true,
+            ViewChannel: true,
+            Connect: true,
+            Speak: true,
+            SendMessages: true,
+            ReadMessageHistory: true,
+            EmbedLinks: true
+          });
+
           client.tempChannels.set(channelId, newOwnerId);
           client.persistStore();
-          await voiceChannel.permissionOverwrites.edit(newOwnerId, { ManageChannels: true, MuteMembers: true, DeafenMembers: true, MoveMembers: true, ViewChannel: true, Connect: true, Speak: true, SendMessages: true, ReadMessageHistory: true, EmbedLinks: true });
+
           const messages = await voiceChannel.messages.fetch({ limit: 20 }).catch(() => null);
-          const panelMessage = messages?.find(message => message.author.id === client.user.id && message.components.some(row => row.components.some(component => component.customId === 'lobi_lock')));
+          const panelMessage = messages?.find(message =>
+            message.author.id === client.user.id &&
+            message.components.some(row => row.components.some(component => component.customId === 'lobi_lock'))
+          );
           if (panelMessage) await panelMessage.edit(buildControlPanel(newOwnerId, guild));
-          return interaction.reply({ content: '✅ Oda sahipliği <@' + newOwnerId + '> kişisine devredildi!', ephemeral: true });
+
+          return interaction.editReply('✅ Oda sahipliği <@' + newOwnerId + '> kişisine devredildi!');
         } catch (e) {
           console.error(e);
-          return interaction.reply({ content: '❌ Sahiplik devredilemedi. Botun yetkilerini kontrol et.', ephemeral: true });
+          return interaction.editReply('❌ Sahiplik devredilemedi. Botun Kanal Yönet ve Mesajları Yönet yetkilerini kontrol et.');
         }
       }
 
