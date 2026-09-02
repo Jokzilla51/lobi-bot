@@ -1,4 +1,4 @@
-const { Events, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, StringSelectMenuBuilder, UserSelectMenuBuilder, PermissionFlagsBits } = require('discord.js');
+const { Events, ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, StringSelectMenuBuilder, UserSelectMenuBuilder, PermissionFlagsBits } = require('discord.js');\nconst { buildControlPanel } = require('../utils/panel');
 
 module.exports = {
   name: Events.InteractionCreate,
@@ -75,6 +75,35 @@ module.exports = {
         return interaction.showModal(modal);
       }
 
+
+      // --- ODA ADI (Modal) ---
+      if (customId === 'lobi_rename') {
+        const modal = new ModalBuilder().setCustomId('lobi_rename_modal:' + channelId).setTitle('Oda Adını Değiştir');
+        const input = new TextInputBuilder()
+          .setCustomId('name_value')
+          .setLabel('Yeni oda adı')
+          .setPlaceholder('Örn: ' + interaction.member.displayName + ' odası')
+          .setValue(voiceChannel.name.slice(0, 100))
+          .setStyle(TextInputStyle.Short)
+          .setRequired(true)
+          .setMinLength(2)
+          .setMaxLength(100);
+        modal.addComponents(new ActionRowBuilder().addComponents(input));
+        return interaction.showModal(modal);
+      }
+
+      // --- SAHİPLİĞİ DEVRET ---
+      if (customId === 'lobi_transfer') {
+        const row = new ActionRowBuilder().addComponents(
+          new UserSelectMenuBuilder().setCustomId('lobi_transfer_select:' + channelId).setPlaceholder('Yeni oda sahibini seç').setMinValues(1).setMaxValues(1)
+        );
+        return interaction.reply({
+          content: '👑 Oda sahipliğini devretmek istediğin üyeyi seç. Bu işlemden sonra paneli yeni sahip yönetir.',
+          components: [row],
+          ephemeral: true
+        });
+      }
+
       // --- GİRİŞ İZNİ VER (User Select) ---
       if (customId === 'lobi_allow') {
         const row = new ActionRowBuilder().addComponents(
@@ -146,8 +175,53 @@ module.exports = {
       }
     }
 
+
+      if (interaction.customId.startsWith('lobi_rename_modal:')) {
+        const channelId = interaction.customId.split(':')[1];
+        const guild = interaction.guild;
+        const ownerId = client.tempChannels.get(channelId);
+        const isAdmin = interaction.member?.permissions?.has(PermissionFlagsBits.Administrator) || interaction.member?.permissions?.has(PermissionFlagsBits.ManageGuild);
+        if (interaction.user.id !== ownerId && !isAdmin) return interaction.reply({ content: '⚠️ Sadece oda sahibi oda adını değiştirebilir!', ephemeral: true });
+        const voiceChannel = guild.channels.cache.get(channelId) || await guild.channels.fetch(channelId).catch(() => null);
+        if (!voiceChannel) return interaction.reply({ content: '❌ Kanal bulunamadı.', ephemeral: true });
+        const name = interaction.fields.getTextInputValue('name_value').trim().replace(/[\r\n]+/g, ' ');
+        if (name.length < 2 || name.length > 100) return interaction.reply({ content: '❌ Oda adı 2 ile 100 karakter arasında olmalı.', ephemeral: true });
+        try {
+          await voiceChannel.setName(name, 'Oda sahibi adı değiştirdi');
+          return interaction.reply({ content: '✅ Oda adı **' + name + '** olarak güncellendi!', ephemeral: true });
+        } catch (e) {
+          console.error(e);
+          return interaction.reply({ content: '❌ Oda adı güncellenemedi. Botun Kanal Yönet yetkisini kontrol et.', ephemeral: true });
+        }
+      }
+
     // === Select Menu Submit ===
     if (interaction.isUserSelectMenu()) {
+
+      if (interaction.customId.startsWith('lobi_transfer_select:')) {
+        const channelId = interaction.customId.split(':')[1];
+        const guild = interaction.guild;
+        const ownerId = client.tempChannels.get(channelId);
+        const isAdmin = interaction.member?.permissions?.has(PermissionFlagsBits.Administrator) || interaction.member?.permissions?.has(PermissionFlagsBits.ManageGuild);
+        if (interaction.user.id !== ownerId && !isAdmin) return interaction.reply({ content: '⚠️ Sadece oda sahibi sahipliği devredebilir!', ephemeral: true });
+        const newOwnerId = interaction.values[0];
+        const newOwner = await guild.members.fetch(newOwnerId).catch(() => null);
+        const voiceChannel = guild.channels.cache.get(channelId) || await guild.channels.fetch(channelId).catch(() => null);
+        if (!voiceChannel || !newOwner || newOwner.user.bot) return interaction.reply({ content: '❌ Geçerli bir üye veya oda bulunamadı.', ephemeral: true });
+        try {
+          client.tempChannels.set(channelId, newOwnerId);
+          client.persistStore();
+          await voiceChannel.permissionOverwrites.edit(newOwnerId, { ManageChannels: true, MuteMembers: true, DeafenMembers: true, MoveMembers: true, ViewChannel: true, Connect: true, Speak: true, SendMessages: true, ReadMessageHistory: true, EmbedLinks: true });
+          const messages = await voiceChannel.messages.fetch({ limit: 20 }).catch(() => null);
+          const panelMessage = messages?.find(message => message.author.id === client.user.id && message.components.some(row => row.components.some(component => component.customId === 'lobi_lock')));
+          if (panelMessage) await panelMessage.edit(buildControlPanel(newOwnerId, guild));
+          return interaction.reply({ content: '✅ Oda sahipliği <@' + newOwnerId + '> kişisine devredildi!', ephemeral: true });
+        } catch (e) {
+          console.error(e);
+          return interaction.reply({ content: '❌ Sahiplik devredilemedi. Botun yetkilerini kontrol et.', ephemeral: true });
+        }
+      }
+
       if (interaction.customId.startsWith('lobi_allow_select:')) {
         const channelId = interaction.customId.split(':')[1];
         const ownerId = client.tempChannels.get(channelId);
